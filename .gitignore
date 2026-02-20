@@ -38,14 +38,6 @@ model_repository/
 triton_logs/
 *.log
 
-# Проектные файлы
-*.sh
-!run.sh  # если хотите сохранить run.sh в репозитории
-convert_trt.sh
-
-# Config files (если нужно исключить)
-# config.pbtxt  # раскомментируйте, если не хотите хранить конфиги в репозитории
-
 # Environment variables
 .env
 .env.local
@@ -58,3 +50,8 @@ tmp/
 temp/
 *.tmp
 
+# НЕ игнорируем скрипты и конфиги
+# Удаляем или комментируем эти строки:
+# *.sh
+# convert_trt.sh
+# config.pbtxt
