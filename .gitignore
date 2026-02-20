@@ -1,0 +1,60 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Model files (бинарные файлы моделей)
+models/**/*.plan
+models/**/*.engine
+models/**/*.trt
+models/**/*.onnx
+*.onnx
+*.plan
+*.engine
+*.trt
+
+# Triton specific
+model_repository/
+triton_logs/
+*.log
+
+# Проектные файлы
+*.sh
+!run.sh  # если хотите сохранить run.sh в репозитории
+convert_trt.sh
+
+# Config files (если нужно исключить)
+# config.pbtxt  # раскомментируйте, если не хотите хранить конфиги в репозитории
+
+# Environment variables
+.env
+.env.local
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
