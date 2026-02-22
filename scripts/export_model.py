@@ -2,12 +2,19 @@
 Точка входа: экспорт модели в ONNX.
 Конвертацию в TensorRT выполняет run.sh через convert_trt.sh.
 """
+
 import os
+import sys
+
+# Добавляем директорию scripts в путь для импорта
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from export_onnx import export_explicit_model
 
-TRT_MODEL_PATH = "models/bge_model/1/model.plan"
-ONNX_PATH = "model.onnx"
+# Пути относительно корня проекта
+SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TRT_MODEL_PATH = os.path.join(SCRIPT_DIR, "models/bge_model/1/model.plan")
+ONNX_PATH = os.path.join(SCRIPT_DIR, "model.onnx")
 
 
 def main():

@@ -6,13 +6,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ONNX_PATH="${1:-$SCRIPT_DIR/model.onnx}"
-TRT_OUTPUT="${2:-$SCRIPT_DIR/models/bge_model/1/model.plan}"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ONNX_PATH="${1:-$PROJECT_ROOT/model.onnx}"
+TRT_OUTPUT="${2:-$PROJECT_ROOT/models/bge_model/1/model.plan}"
 
 mkdir -p "$(dirname "$TRT_OUTPUT")"
 
 docker run --gpus all --rm \
-  -v "$SCRIPT_DIR:/workspace" \
+  -v "$PROJECT_ROOT:/workspace" \
   -w /workspace \
   nvcr.io/nvidia/tensorrt:23.09-py3 \
   trtexec \
