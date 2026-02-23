@@ -1,6 +1,4 @@
-"""
-Экспорт модели BGE-M3 в формат ONNX.
-"""
+"""Экспорт BGE-M3 в ONNX."""
 import torch
 import warnings
 
@@ -12,7 +10,6 @@ warnings.filterwarnings("ignore", category=Warning)
 
 
 def export_explicit_model(onnx_path="model.onnx"):
-    """Загружает модель, оборачивает и экспортирует в ONNX."""
     model = AutoModel.from_pretrained("Roflmax/bge-m3-legal-ru-updata")
     tokenizer = AutoTokenizer.from_pretrained("Roflmax/bge-m3-legal-ru-updata")
     model.eval()

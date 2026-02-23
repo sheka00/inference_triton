@@ -54,5 +54,3 @@ temp/
 # Отчёты и результаты тестов
 report*.html
 results*.csv
-# Не игнорируем README.md и другие важные HTML файлы
-!README.md

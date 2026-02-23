@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Полный цикл: среда → зависимости → экспорт модели (если нет) → удаление среды → запуск Triton + Encoder.
-# Запуск: ./run.sh
-
+# Экспорт модели (если нет) → docker compose (Triton + Encoder). Запуск: ./run.sh
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

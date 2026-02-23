@@ -1,8 +1,4 @@
-"""
-Точка входа: экспорт модели в ONNX.
-Конвертацию в TensorRT выполняет run.sh через convert_trt.sh.
-"""
-
+"""Экспорт модели в ONNX. TensorRT — run.sh через convert_trt.sh."""
 import os
 import sys
 

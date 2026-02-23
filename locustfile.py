@@ -1,7 +1,4 @@
-"""
-Нагрузочный тест обёртки (encoder): POST /encode с текстом.
-Запуск: locust -f locustfile.py --host http://localhost:8080
-"""
+"""Нагрузочный тест: locust -f locustfile.py --host http://localhost:8080"""
 import random
 from locust import HttpUser, task, between
 
@@ -9,6 +6,8 @@ SAMPLE_TEXTS = [
     "Договор поставки товара между юридическими лицами.",
     "Исковое заявление о взыскании задолженности.",
     "Трудовой договор с работником на неопределённый срок.",
+    "Договор аренды недвижимого имущества.",
+    "Договор оказания услуг по разработке программного обеспечения.",
 ]
 
 
@@ -23,3 +22,4 @@ class EncoderUser(HttpUser):
             json={"query": text, "batch_size": 1},
             name="/encode",
         )
+

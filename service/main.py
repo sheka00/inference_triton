@@ -1,7 +1,4 @@
-"""
-Микросервис-обёртка: текст → токенизация → Triton → вектор.
-Эндпоинты под клиент APIEncoder (encode, get_embedding_dimension).
-"""
+"""Микросервис: текст → токенизация → Triton → вектор. Эндпоинты: /health, /encode, /get_vector_dim."""
 from __future__ import annotations
 
 import asyncio
@@ -22,7 +19,6 @@ TRITON_URL_ENV = "TRITON_URL"
 
 class EncodeBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
-
     query: Union[str, List[str]]
     prefix: Optional[str] = None
     batch_size: int = 32
@@ -38,16 +34,10 @@ async def lifespan(app: FastAPI):
     from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     triton_base_url = os.environ.get(TRITON_URL_ENV, "http://localhost:8000")
-    
-    # Создаём один клиент Triton для всех запросов (переиспользование сессии)
     triton_client = TritonInferClient(triton_base_url)
-    
     app.state.tokenizer = tokenizer
     app.state.triton_client = triton_client
-    
     yield
-    
-    # Закрываем сессию при завершении
     await triton_client.close()
     app.state.tokenizer = None
     app.state.triton_client = None
@@ -59,11 +49,6 @@ app = FastAPI(title="BGE Encoder", lifespan=lifespan)
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
-
-
-@app.get("/encode/get_embedding_dimension")
-async def get_embedding_dimension() -> int:
-    return EMBEDDING_DIM
 
 
 @app.get("/get_vector_dim")
@@ -84,7 +69,6 @@ async def encode(request: Request, body: EncodeBody) -> Any:
     batch_size = max(1, min(body.batch_size, 64))
 
     def tokenize_one(text: str) -> tuple[List[int], List[int]]:
-        """Токенизация текста. Transformers с padding='max_length' всегда возвращает последовательность длиной MAX_LENGTH."""
         enc = tokenizer(
             text,
             max_length=MAX_LENGTH,

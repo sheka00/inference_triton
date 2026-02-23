@@ -1,14 +1,8 @@
-"""
-Пример использования клиента APIEncoder.
-
-Запуск из корня проекта:
-    python examples/example_usage.py
-"""
+"""Пример: python examples/example_usage.py (из корня проекта)."""
 import asyncio
 import sys
 from pathlib import Path
 
-# Добавляем корневую директорию в путь
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -16,14 +10,10 @@ from client.api_encoder import APIEncoder
 
 
 async def main():
-    """Пример работы с Encoder Service."""
-    # Инициализация клиента
     encoder = APIEncoder(base_url="http://localhost:8080")
-    
     try:
-        # Получить размерность вектора
-        dim = await encoder.get_sentence_embedding_dimension()
-        print(f"Размерность вектора: {dim}")
+        print("Сервис:", await encoder.health())
+        print("Размерность вектора:", await encoder.get_vector_dim())
         
         # Закодировать один текст
         print("\n=== Кодирование одного текста ===")
@@ -57,16 +47,6 @@ async def main():
         await encoder.close()
 
 
-async def example_with_context_manager():
-    """Пример использования с async context manager."""
-    async with APIEncoder(base_url="http://localhost:8080") as encoder:
-        vector = await encoder.encode("Пример текста")
-        print(f"Вектор: {vector.shape}")
-
-
 if __name__ == "__main__":
     print("=== Пример использования APIEncoder ===\n")
     asyncio.run(main())
-    
-    print("\n=== Пример с context manager ===")
-    asyncio.run(example_with_context_manager())

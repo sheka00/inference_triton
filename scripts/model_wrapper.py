@@ -1,16 +1,10 @@
-"""
-Обёртка модели BGE-M3 для экспорта в ONNX.
-"""
+"""Обёртка BGE-M3 для экспорта в ONNX."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 class BGE_M3_Wrapper(nn.Module):
-    """
-    Обертка модели для экспорта в ONNX.
-    Использует прямой forward вызов оригинальной модели.
-    """
     def __init__(self, original_model):
         super().__init__()
         self.model = original_model

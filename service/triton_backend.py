@@ -1,26 +1,20 @@
-"""
-Асинхронный aiohttp-клиент к Triton Inference Server.
-"""
+"""Асинхронный aiohttp-клиент к Triton."""
 from __future__ import annotations
 
 import aiohttp
 from typing import List
-
 
 TRITON_MODEL = "bge_model"
 MAX_LENGTH = 512
 
 
 class TritonInferClient:
-    """Асинхронный клиент к Triton Inference Server с переиспользованием сессии."""
-    
     def __init__(self, base_url: str, timeout: float = 60.0) -> None:
         self._base_url = base_url.rstrip("/")
         self._timeout = aiohttp.ClientTimeout(total=timeout)
         self._session: aiohttp.ClientSession | None = None
 
     async def _get_session(self) -> aiohttp.ClientSession:
-        """Получить или создать сессию (ленивая инициализация)."""
         if self._session is None or self._session.closed:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         return self._session
@@ -30,7 +24,6 @@ class TritonInferClient:
         input_ids: List[int],
         attention_mask: List[int],
     ) -> List[float]:
-        """Один запрос к Triton: один текст (уже токенизированный). Возвращает 1024 float."""
         payload = {
             "inputs": [
                 {
@@ -52,13 +45,11 @@ class TritonInferClient:
         async with session.post(url, json=payload) as resp:
             resp.raise_for_status()
             data = await resp.json()
-        # Triton: outputs[0].data — массив из 1024 float
         out = data.get("outputs", [])
         if not out or out[0].get("name") != "output":
             raise ValueError("Unexpected Triton response shape")
         return out[0]["data"]
     
     async def close(self) -> None:
-        """Закрыть сессию."""
         if self._session and not self._session.closed:
             await self._session.close()

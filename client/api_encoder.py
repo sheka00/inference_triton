@@ -1,7 +1,3 @@
-"""
-Асинхронный клиент для работы с Encoder Service.
-Использование аналогично sentence-transformers, но полностью развязан с конкретной реализацией.
-"""
 import aiohttp
 from typing import Union, List, Optional
 
@@ -10,32 +6,21 @@ from tqdm import tqdm
 
 
 class APIEncoder:
-    """
-    Клиент для работы с Encoder Service.
-    
-    Пример использования:
-        encoder = APIEncoder(base_url="http://localhost:8080")
-        vector = await encoder.encode("Текст для кодирования")
-        await encoder.close()
-    """
-    
     def __init__(
         self,
         base_url: str,
         timeout: float = 600.0,
     ) -> None:
-        """
-        Инициализация клиента.
-        
-        Args:
-            base_url: Базовый URL Encoder Service (например, "http://localhost:8080")
-            timeout: Таймаут запросов в секундах
-        """
         self._session = aiohttp.ClientSession(
             base_url=base_url.rstrip("/") + "/",
-            timeout=aiohttp.ClientTimeout(total=timeout),
+            timeout=aiohttp.ClientTimeout(float(timeout)),
         )
-    
+
+    async def health(self) -> dict:
+        async with self._session.get(url="/health") as response:
+            response.raise_for_status()
+            return await response.json()
+
     async def encode(
         self,
         query: Union[str, List[str]],
@@ -43,18 +28,6 @@ class APIEncoder:
         batch_size: int = 5,
         show_progress_bar: bool = False,
     ) -> np.ndarray:
-        """
-        Кодирование текста(ов) в векторы.
-        
-        Args:
-            query: Текст или список текстов для кодирования
-            prefix: Опциональный префикс для текстов
-            batch_size: Размер батча для обработки
-            show_progress_bar: Показывать ли прогресс-бар
-            
-        Returns:
-            numpy.ndarray: Массив векторов. Для одного текста - 1D массив, для списка - 2D массив
-        """
         is_single_query = isinstance(query, str)
         if is_single_query:
             query = [query]
@@ -67,7 +40,7 @@ class APIEncoder:
         embeddings = []
         for batch in tqdm(batches, desc="Process embeddings", disable=not show_progress_bar):
             async with self._session.post(
-                url="encode",
+                url="/encode",
                 json={
                     "query": batch,
                     "prefix": prefix,
@@ -83,28 +56,10 @@ class APIEncoder:
             embeddings = embeddings[0]
         return embeddings
     
-    async def get_sentence_embedding_dimension(self) -> int:
-        """
-        Получить размерность вектора эмбеддинга.
-        
-        Returns:
-            int: Размерность вектора (1024)
-        """
-        async with self._session.get(
-                url="encode/get_embedding_dimension",
-            ) as response:
-                response.raise_for_status()
-                dimensions = await response.json()
-        return dimensions
+    async def get_vector_dim(self) -> int:
+        async with self._session.get(url="/get_vector_dim") as response:
+            response.raise_for_status()
+            return await response.json()
     
     async def close(self) -> None:
-        """Закрыть сессию клиента."""
         await self._session.close()
-    
-    async def __aenter__(self):
-        """Поддержка async context manager."""
-        return self
-    
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Поддержка async context manager."""
-        await self.close()
