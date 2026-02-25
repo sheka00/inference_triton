@@ -8,7 +8,7 @@
 
 - **Triton** — инференс модели в TensorRT (один запрос = один вектор 1024).
 - **Encoder (FastAPI)** — токенизатор в lifespan, асинхронные запросы в Triton; эндпоинты: `/health`, `/encode`, `/get_vector_dim`.
-- **Клиент** — пакет `client` с классом `APIEncoder`: те же три операции по HTTP, минимум зависимостей (aiohttp, numpy, tqdm).
+- **Клиент** — пакет `client` с классом `APIEncoder`: те же три операции по HTTP, минимум зависимостей (aiohttp, numpy). Отправляет все тексты одним запросом, батчификация выполняется на сервере.
 - **Запуск** — `run.sh` при необходимости экспортирует модель в ONNX → TensorRT, затем поднимает Triton и Encoder через Docker Compose.
 
 ---
@@ -27,7 +27,7 @@
 ├── client/                     # Клиент к Encoder Service
 │   ├── __init__.py             # from client import APIEncoder
 │   ├── api_encoder.py          # Класс APIEncoder (health, encode, get_vector_dim)
-│   └── requirements.txt        # aiohttp, numpy, tqdm — только для клиента
+│   └── requirements.txt        # aiohttp, numpy — только для клиента
 │
 ├── service/                    # Микросервис FastAPI
 │   ├── .dockerignore
@@ -63,7 +63,15 @@ chmod +x run.sh scripts/convert_trt.sh
 ```bash
 curl http://localhost:8080/health
 curl http://localhost:8080/get_vector_dim
-curl -X POST http://localhost:8080/encode -H "Content-Type: application/json" -d '{"query": "тест", "batch_size": 1}'
+curl -X POST http://localhost:8080/encode -H "Content-Type: application/json" -d '{"query": "тест"}'
+# Или несколько текстов:
+curl -X POST http://localhost:8080/encode -H "Content-Type: application/json" -d '{"query": ["текст 1", "текст 2"], "batch_size": 32}'
+```
+
+**Проверка Triton:**
+```bash
+curl http://localhost:8000/v2/models/bge_model
+curl http://localhost:8002/metrics  # Метрики Prometheus
 ```
 
 **Проверка Encoder (Python, из корня):**
@@ -75,7 +83,10 @@ from client import APIEncoder
 async def run():
     e = APIEncoder('http://localhost:8080')
     print(await e.health(), await e.get_vector_dim())
+    # Один текст
     print((await e.encode('один текст')).shape)
+    # Несколько текстов
+    print((await e.encode(['текст 1', 'текст 2'])).shape)
     await e.close()
 asyncio.run(run())
 "
