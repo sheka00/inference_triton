@@ -7,8 +7,9 @@ from contextlib import asynccontextmanager
 from typing import Any, List, Optional, Union
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
+
+from transformers import AutoTokenizer
 
 from triton_backend import MAX_LENGTH, TritonInferClient
 
@@ -24,14 +25,8 @@ class EncodeBody(BaseModel):
     batch_size: int = 32
 
 
-class Embedding(BaseModel):
-    """Модель эмбеддинга. Валидация float отключена через model_construct."""
-    vector: List[float]
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from transformers import AutoTokenizer
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     triton_base_url = os.environ.get(TRITON_URL_ENV, "http://localhost:8000")
     triton_client = TritonInferClient(triton_base_url)
@@ -39,8 +34,6 @@ async def lifespan(app: FastAPI):
     app.state.triton_client = triton_client
     yield
     await triton_client.close()
-    app.state.tokenizer = None
-    app.state.triton_client = None
 
 
 app = FastAPI(title="BGE Encoder", lifespan=lifespan)
@@ -89,8 +82,4 @@ async def encode(request: Request, body: EncodeBody) -> Any:
         batch_embeddings = await asyncio.gather(*tasks)
         embeddings.extend(batch_embeddings)
 
-    # Создаём модели эмбеддингов через model_construct (без валидации float для производительности)
-    embedding_models = [Embedding.model_construct(vector=vec) for vec in embeddings]
-    # Сериализуем в список векторов (как было раньше)
-    result = [emb.vector for emb in embedding_models]
-    return JSONResponse(content=result)
+    return embeddings

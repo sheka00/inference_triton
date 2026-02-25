@@ -2,7 +2,6 @@ import aiohttp
 from typing import Union, List, Optional
 
 import numpy as np
-from tqdm import tqdm
 
 
 class APIEncoder:
@@ -25,33 +24,24 @@ class APIEncoder:
         self,
         query: Union[str, List[str]],
         prefix: Optional[str] = None,
-        batch_size: int = 5,
-        show_progress_bar: bool = False,
+        batch_size: int = 32,
     ) -> np.ndarray:
         is_single_query = isinstance(query, str)
         if is_single_query:
             query = [query]
         
-        batches = [
-            query[i:i + batch_size] 
-            for i in range(0, len(query), batch_size)
-        ]
+        async with self._session.post(
+            url="/encode",
+            json={
+                "query": query,
+                "prefix": prefix,
+                "batch_size": batch_size,
+            }
+        ) as response:
+            response.raise_for_status()
+            raw_embeddings = await response.json()
 
-        embeddings = []
-        for batch in tqdm(batches, desc="Process embeddings", disable=not show_progress_bar):
-            async with self._session.post(
-                url="/encode",
-                json={
-                    "query": batch,
-                    "prefix": prefix,
-                    "batch_size": batch_size,
-                }
-            ) as response:
-                response.raise_for_status()
-                raw_embeddings = await response.json()
-            embeddings.extend(raw_embeddings)
-
-        embeddings = np.array(embeddings)
+        embeddings = np.array(raw_embeddings)
         if is_single_query:
             embeddings = embeddings[0]
         return embeddings
