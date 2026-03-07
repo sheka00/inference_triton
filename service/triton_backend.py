@@ -1,4 +1,4 @@
-"""Асинхронный aiohttp-клиент к Triton."""
+"""Асинхронный aiohttp-клиент к Triton с поддержкой батчинга."""
 from __future__ import annotations
 
 import aiohttp
@@ -19,23 +19,29 @@ class TritonInferClient:
             self._session = aiohttp.ClientSession(timeout=self._timeout)
         return self._session
 
-    async def infer(
+    async def infer_batch(
         self,
-        input_ids: List[int],
-        attention_mask: List[int],
-    ) -> List[float]:
+        input_ids: List[List[int]],
+        attention_mask: List[List[int]],
+    ) -> List[List[float]]:
+        """
+        Отправляет батч в Triton одним запросом.
+        input_ids: [batch_size, MAX_LENGTH]
+        attention_mask: [batch_size, MAX_LENGTH]
+        """
+        batch_size = len(input_ids)
         payload = {
             "inputs": [
                 {
                     "name": "input_ids",
-                    "shape": [1, MAX_LENGTH],
-                    "datatype": "INT32",
+                    "shape": [batch_size, MAX_LENGTH],
+                    "datatype": "INT64",
                     "data": input_ids,
                 },
                 {
                     "name": "attention_mask",
-                    "shape": [1, MAX_LENGTH],
-                    "datatype": "INT32",
+                    "shape": [batch_size, MAX_LENGTH],
+                    "datatype": "INT64",
                     "data": attention_mask,
                 },
             ]
@@ -45,11 +51,19 @@ class TritonInferClient:
         async with session.post(url, json=payload) as resp:
             resp.raise_for_status()
             data = await resp.json()
+            
         out = data.get("outputs", [])
         if not out or out[0].get("name") != "output":
             raise ValueError("Unexpected Triton response shape")
-        return out[0]["data"]
-    
+            
+        # Triton возвращает плоский список или вложенный в зависимости от версии/настроек.
+        # Для bge_model выход [batch_size, 1024].
+        raw_data = out[0]["data"]
+        # Группируем обратно в [batch_size, 1024]
+        embedding_dim = 1024
+        embeddings = [raw_data[i : i + embedding_dim] for i in range(0, len(raw_data), embedding_dim)]
+        return embeddings
+
     async def close(self) -> None:
         if self._session and not self._session.closed:
             await self._session.close()

@@ -5,23 +5,21 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-TRT_MODEL="models/bge_model/1/model.plan"
+ONNX_MODEL="models/bge_model/1/model.onnx"
 VENV_DIR="triton_env"
 
-# 1. Экспорт модели в TensorRT (если ещё нет)
-if [ ! -f "$TRT_MODEL" ]; then
-  echo "=== TRT модели нет, выполняем экспорт ==="
+# 1. Экспорт модели в ONNX (если ещё нет)
+if [ ! -f "$ONNX_MODEL" ]; then
+  echo "=== ONNX модели нет, выполняем экспорт ==="
   python3 -m venv "$VENV_DIR"
   source "$VENV_DIR/bin/activate"
   pip install -q -r requirements.txt
   python scripts/export_model.py
-  ./scripts/convert_trt.sh model.onnx "$TRT_MODEL"
-  rm -f model.onnx model.onnx.data
   deactivate
   echo "=== Удаление виртуального окружения ==="
   rm -rf "$VENV_DIR"
 else
-  echo "=== TRT модель уже есть: $TRT_MODEL ==="
+  echo "=== ONNX модель уже есть: $ONNX_MODEL ==="
 fi
 
 # 2. Остановить существующие контейнеры (если есть)

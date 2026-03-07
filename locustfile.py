@@ -15,11 +15,11 @@ class EncoderUser(HttpUser):
     wait_time = between(0, 0)
 
     @task(1)
-    def encode_one(self):
-        text = random.choice(SAMPLE_TEXTS)
+    def encode_batch(self):
+        texts = [random.choice(SAMPLE_TEXTS) for _ in range(10)]
         self.client.post(
             "/encode",
-            json={"query": text, "batch_size": 1},
-            name="/encode",
+            json={"query": texts, "batch_size": 10},
+            name="/encode_batch",
         )
 

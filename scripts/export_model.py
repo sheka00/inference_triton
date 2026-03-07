@@ -1,4 +1,4 @@
-"""Экспорт модели в ONNX. TensorRT — run.sh через convert_trt.sh."""
+"""Экспорт модели в ONNX для Triton."""
 import os
 import sys
 
@@ -9,17 +9,20 @@ from export_onnx import export_explicit_model
 
 # Пути относительно корня проекта
 SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TRT_MODEL_PATH = os.path.join(SCRIPT_DIR, "models/bge_model/1/model.plan")
-ONNX_PATH = os.path.join(SCRIPT_DIR, "model.onnx")
+MODEL_DIR = os.path.join(SCRIPT_DIR, "models/bge_model/1")
+ONNX_PATH = os.path.join(MODEL_DIR, "model.onnx")
 
 
 def main():
-    if os.path.exists(TRT_MODEL_PATH):
-        print(f"TRT модель уже есть: {TRT_MODEL_PATH}. Экспорт пропущен.")
+    if os.path.exists(ONNX_PATH):
+        print(f"ONNX модель уже есть: {ONNX_PATH}. Экспорт пропущен.")
         return
 
+    # Создаем директорию, если её нет
+    os.makedirs(MODEL_DIR, exist_ok=True)
+
     export_explicit_model(ONNX_PATH)
-    print(f"ONNX сохранён: {ONNX_PATH}. Дальше run.sh вызовет convert_trt.sh.")
+    print(f"ONNX сохранён: {ONNX_PATH}.")
 
 
 if __name__ == "__main__":

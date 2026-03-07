@@ -29,7 +29,9 @@ models/**/*.plan
 models/**/*.engine
 models/**/*.trt
 models/**/*.onnx
+models/**/*.onnx.data
 *.onnx
+*.onnx.data
 *.plan
 *.engine
 *.trt

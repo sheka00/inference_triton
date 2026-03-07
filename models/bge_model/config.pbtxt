@@ -1,16 +1,16 @@
 name: "bge_model"
-platform: "tensorrt_plan"
-max_batch_size: 1
+backend: "onnxruntime"
+max_batch_size: 32
 
 input [
   {
     name: "input_ids"
-    data_type: TYPE_INT32
+    data_type: TYPE_INT64
     dims: [512]
   },
   {
     name: "attention_mask"
-    data_type: TYPE_INT32
+    data_type: TYPE_INT64
     dims: [512]
   }
 ]
@@ -22,6 +22,10 @@ output [
     dims: [1024]
   }
 ]
+
+dynamic_batching {
+    max_queue_delay_microseconds: 5000
+}
 
 instance_group [
   {

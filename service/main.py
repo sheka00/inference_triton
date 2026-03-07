@@ -61,9 +61,9 @@ async def encode(request: Request, body: EncodeBody) -> Any:
 
     batch_size = max(1, min(body.batch_size, 64))
 
-    def tokenize_one(text: str) -> tuple[List[int], List[int]]:
+    def tokenize_batch(batch_texts: List[str]) -> tuple[List[List[int]], List[List[int]]]:
         enc = tokenizer(
-            text,
+            batch_texts,
             max_length=MAX_LENGTH,
             padding="max_length",
             truncation=True,
@@ -71,15 +71,13 @@ async def encode(request: Request, body: EncodeBody) -> Any:
         )
         return enc["input_ids"], enc["attention_mask"]
 
-    async def infer_one(input_ids: List[int], attention_mask: List[int]) -> List[float]:
-        return await client.infer(input_ids, attention_mask)
-
     embeddings: List[List[float]] = []
     for i in range(0, len(texts), batch_size):
-        batch_texts = texts[i : i + batch_size]
-        tokenized = [tokenize_one(t) for t in batch_texts]
-        tasks = [infer_one(ids, mask) for ids, mask in tokenized]
-        batch_embeddings = await asyncio.gather(*tasks)
+        batch_slice = texts[i : i + batch_size]
+        input_ids, attention_mask = tokenize_batch(batch_slice)
+        
+        # Отправляем весь батч одним запросом в Triton
+        batch_embeddings = await client.infer_batch(input_ids, attention_mask)
         embeddings.extend(batch_embeddings)
 
     return embeddings
