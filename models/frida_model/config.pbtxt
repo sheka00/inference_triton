@@ -1,4 +1,4 @@
-name: "bge_model"
+name: "frida_model"
 backend: "onnxruntime"
 max_batch_size: 32
 
@@ -19,7 +19,7 @@ output [
   {
     name: "output"
     data_type: TYPE_FP32
-    dims: [1024]
+    dims: [1536]
   }
 ]
 
@@ -29,12 +29,12 @@ dynamic_batching {
 
 instance_group [
   {
-    count: 3
+    count: 2
     kind: KIND_GPU
     gpus: [0]
   },
   {
-    count: 3
+    count: 2
     kind: KIND_GPU
     gpus: [1]
   }

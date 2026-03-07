@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class BGE_M3_Wrapper(nn.Module):
+class FRIDA_Wrapper(nn.Module):
     def __init__(self, original_model):
         super().__init__()
         self.model = original_model
@@ -15,6 +15,7 @@ class BGE_M3_Wrapper(nn.Module):
             attention_mask=attention_mask,
             return_dict=True
         )
+        # FRIDA uses CLS pooling: hidden_state[:, 0]
         cls_embedding = model_output.last_hidden_state[:, 0, :]
         normalized = F.normalize(cls_embedding, p=2, dim=1)
         return normalized

@@ -4,7 +4,7 @@ from __future__ import annotations
 import aiohttp
 from typing import List
 
-TRITON_MODEL = "bge_model"
+TRITON_MODEL = "frida_model"
 MAX_LENGTH = 512
 
 
@@ -60,7 +60,7 @@ class TritonInferClient:
         # Для bge_model выход [batch_size, 1024].
         raw_data = out[0]["data"]
         # Группируем обратно в [batch_size, 1024]
-        embedding_dim = 1024
+        embedding_dim = 1536
         embeddings = [raw_data[i : i + embedding_dim] for i in range(0, len(raw_data), embedding_dim)]
         return embeddings
 

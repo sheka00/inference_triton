@@ -13,8 +13,8 @@ from transformers import AutoTokenizer
 
 from triton_backend import MAX_LENGTH, TritonInferClient
 
-MODEL_NAME = "Roflmax/bge-m3-legal-ru-updata"
-EMBEDDING_DIM = 1024
+MODEL_NAME = "ai-forever/FRIDA"
+EMBEDDING_DIM = 1536
 TRITON_URL_ENV = "TRITON_URL"
 
 
