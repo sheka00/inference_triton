@@ -57,9 +57,9 @@ class TritonInferClient:
             raise ValueError("Unexpected Triton response shape")
             
         # Triton возвращает плоский список или вложенный в зависимости от версии/настроек.
-        # Для bge_model выход [batch_size, 1024].
+        # Для frida_model выход [batch_size, 1536].
         raw_data = out[0]["data"]
-        # Группируем обратно в [batch_size, 1024]
+        # Группируем обратно в [batch_size, 1536]
         embedding_dim = 1536
         embeddings = [raw_data[i : i + embedding_dim] for i in range(0, len(raw_data), embedding_dim)]
         return embeddings

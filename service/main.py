@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
     await triton_client.close()
 
 
-app = FastAPI(title="BGE Encoder", lifespan=lifespan)
+app = FastAPI(title="FRIDA Encoder", lifespan=lifespan)
 
 
 @app.get("/health")

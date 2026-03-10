@@ -1,4 +1,4 @@
-"""Обёртка BGE-M3 для экспорта в ONNX."""
+"""Обёртка FRIDA для экспорта в ONNX."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

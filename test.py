@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore", category=UserWarning, module="torch.cuda")
 def get_sentence_transformer_with_compatibility(model_name: str):
     """Загружает SentenceTransformer с проверкой совместимости GPU"""
     try:
-        model = SentenceTransformer(model_name)
+        model = SentenceTransformer(model_name).half()
         
         if torch.cuda.is_available():
             device = torch.cuda.get_device_properties(0)
@@ -26,7 +26,7 @@ def get_sentence_transformer_with_compatibility(model_name: str):
             model = model.to('cpu')
     except Exception as e:
         print(f"⚠ Ошибка, используем CPU: {e}")
-        model = SentenceTransformer(model_name, device='cpu')
+        model = SentenceTransformer(model_name, device='cpu').half()
     
     return model
 
